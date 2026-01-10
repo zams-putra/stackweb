@@ -4,7 +4,7 @@
 - main framework: nestjs
 - db: sqlite
 - orm: prisma
-- auth: jwt
+- auth: jwt, passport
 - input validator: class-validator
 
 
