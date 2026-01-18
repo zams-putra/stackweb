@@ -8,6 +8,54 @@
 - input validator: class-validator
 
 
+## package
+```json
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.0.1",
+    "@prisma/adapter-better-sqlite3": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@types/passport-jwt": "^4.0.1",
+    "bcrypt": "^6.0.0",
+    "class-validator": "^0.14.3",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.7",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^16.0.0",
+    "jest": "^30.0.0",
+    "prettier": "^3.4.2",
+    "prisma": "^7.2.0",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+```
+
 
 ## Step :
 ### - install nestjs 
@@ -579,4 +627,44 @@ export class UserController {
     };
   }
 }
+```
+- set cookie di backend aja lah kalo gitu, set di /src/app.controller.ts
+```ts
+@Post('/login')
+  async login(
+    @Body() dto: LoginDTO,
+    @Res({ passthrough: true }) res: Response, // ini package express import nya
+  ) {
+    const result = await this.authService.login(dto);
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60,
+    });
+    return {
+      success: true,
+      data: result,
+    };
+  }
+```
+- dan set endpoint buat logout buat clear cookie, di file yg sama
+```ts
+@Post('/logout')
+  logout(@Res() res: Response) {
+    res.clearCookie('access_token');
+    return {
+      success: true,
+      message: 'bye buddy.',
+    };
+  }
+```
+- set cors di src/main.ts, gatau kenapa dah di allow * malah gabisa, heran pokoknya aneh
+```
+  app.enableCors({
+    origin: ['http://localhost:5000', '*'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 ```
