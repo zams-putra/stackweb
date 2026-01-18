@@ -5,13 +5,14 @@ import {
   HttpCode,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AppService, AuthService, UserService } from './app.service';
 import { RegisterDTO } from 'dto/register.dto';
 import { JwtAuthGuard } from 'guard/jwt.guard';
 import { LoginDTO } from 'dto/login.dto';
-import { Request } from 'express';
+import type { Request, Response } from 'express';
 
 @Controller()
 export class AppController {
@@ -51,10 +52,29 @@ export class AuthController {
     };
   }
   @Post('/login')
-  async login(@Body() dto: LoginDTO) {
+  async login(
+    @Body() dto: LoginDTO,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(dto);
+    res.cookie('access_token', result.access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60,
+    });
     return {
       success: true,
-      data: await this.authService.login(dto),
+      data: result,
+    };
+  }
+
+  @Post('/logout')
+  logout(@Res() res: Response) {
+    res.clearCookie('access_token');
+    return {
+      success: true,
+      message: 'bye buddy.',
     };
   }
 }
